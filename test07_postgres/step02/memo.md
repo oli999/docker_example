@@ -38,4 +38,8 @@ docker run -d \
     --network my-net \
     --name my-fastapi \
     my-fastapi:1.0
+
+# 현재 실행중이거나 정지중에 있는 모든 container 삭제 하기
+docker rm -f $(docker ps -aq)
+
 ```
