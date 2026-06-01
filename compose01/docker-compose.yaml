@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  my-web-app: # service 의 이름은 마음대로 지을수 있다.
+    build: . # 현재 폴더에 있는 Dockerfile 을 이용해서 이미지를 build 하겠다
+    image: compose-app:1.0 # 빌드된 이미지의 이름 설정
+    container_name: compose-app
+    ports: # host 의 port 를 container 의 port 로 연결하는 설정 
+      - "8001:8000" 
