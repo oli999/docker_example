@@ -1,0 +1,16 @@
+version: '3.8'
+
+# 자동으로 만들어주는 volume 정보 명시하기
+volumes:
+  nginx-vol:
+    # 그런데 만일 명령어를 통해서 미리 만들어둔 volume 을 여기에 연결해서 사용하고 싶다면 아래의 옵션을 추가
+    # external: true
+services:
+  web-server:
+    image: nginx:latest
+    container_name: nginx-app
+    ports:
+      - "80:80"
+    volumes:
+      # volumes: 에서 선언한 volume 의 이름을 동일하게 설정하면 volume 이 연결된다. 
+      - nginx-vol:/usr/share/nginx/html

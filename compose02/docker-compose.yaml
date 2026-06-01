@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  web-server:
+    image: nginx:latest
+    container_name: nginx-app
+    ports:
+      - "80:80"
+    # 미리 만들어둔 ./nginx-index 를 볼륨으로 사용하기 위한 설정 
+    volumes:
+      - ./nginx-index:/usr/share/nginx/html

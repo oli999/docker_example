@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  database: # 서비스의 이름은 마음대로 작성 가능
+    image: postgres:15
+    container_name: postgres-app
+    ports:
+      - '5432:5432'
+    environment: # 컨테이너에 환경변수를 environment 를 이용해서 전달할수 있다.
+      POSTGRES_USER: scott
+      POSTGRES_PASSWORD: tiger
+      POSTGRESS_DB: scott_db
+
+
