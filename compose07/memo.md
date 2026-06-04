@@ -67,4 +67,9 @@ sudo ls -al /mnt/nfs/pg_init
 # ubuntu01 에서도 확인하기
 sudo ls -al /nfs/shared/pg_init
 
+# 저장된 데이터 select 해보기 
+docker compose exec -T my-postgres psql -U scott -d scott_db <<-EOF
+    SELECT * FROM member;
+EOF
+
 ```
