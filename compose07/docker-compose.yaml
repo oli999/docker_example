@@ -1,0 +1,18 @@
+# compose06/docker-compose.yaml
+
+services:
+  my-postgres:
+    image: postgres:15
+    container_name: my-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: scott
+      POSTGRES_PASSWORD: tiger
+      POSTGRES_DB: scott_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # nfs 서버와 연결되어 있는 폴더의 파일을 db 에 연결 한다 
+      - /mnt/nfs/pg_init/init.sql:/docker-entrypoint-initdb.d/init.sql
+volumes:
+  pgdata:
