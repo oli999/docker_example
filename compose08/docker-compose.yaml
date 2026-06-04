@@ -1,0 +1,80 @@
+# compose08/docker-compose.yaml
+
+networks:
+  db-net:
+    driver: bridge
+volumes:
+  pg-main-volume:
+  pg-replica-volume:
+services:
+  # =====================================================================
+  # 1. 마스터 DB (pg-main / 쓰기 가능)
+  # =====================================================================
+  pg-main:
+    image: postgres:15
+    container_name: pg-main
+    ports:
+      - "5431:5432"
+    environment:
+      POSTGRES_USER: scott
+      POSTGRES_PASSWORD: tiger
+      POSTGRES_DB: scott_db
+    volumes:
+      - pg-main-volume:/var/lib/postgresql/data
+    networks:
+      - db-net
+    # 복제 관련 설정 옵션을 명령어로 다일렉트 주입
+    command: >
+      postgres
+      -c wal_level=replica 
+      -c max_wal_senders=10
+      -c archive_mode=on
+    # 셋업반이 안전하게 작업할 수 있도록 헬스체크 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scott -d scott_db"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+  # 셋업 전용 (일회성 작업) 서비스 띄우기
+  pg-setup:
+    image: postgres:15
+    container_name: pg-setup
+    volumes:
+      # 두개의 volume 에 pg-main 에 필요한 설정 하고 , pg-replica 가 필요한 데이터를 대신 넣을 예정
+      - pg-main-volume:/main_data
+      - pg-replica-volume:/replica_data
+    networks:
+      - db-net
+    # 아래의 서비스 (pg-main) 의 health 체크가 성공 했을때 이 서비스가 구동되도록 설정 
+    depends_on:
+      pg-main:
+        condition: service_healthy
+    # entrypoint 를 아예 bash 를 실행하기로 설정 
+    # bash 안에서 지속적으로 실행되는 프로세스를 띄워 놓지 않는 이상 이 컨테이너는 command 가 실행된 이후에 stop 상태가 된다
+    entrypoint: ["bash", "-c"]
+    # command 안에서 pg-main 의 설정을 변경하고, pg-replica 가 사용할 데이터를 pg-main 으로 부터 가져와서 미리 넣어둔다. 
+    command:
+      - |
+        echo '=== 1. 마스터 복제 방화벽 개방 ==='
+        echo "host replication scott 0.0.0.0/0 md5" >> /main_data/pg_hba.conf
+        
+        PGPASSWORD=tiger psql -h pg-main -U scott -d scott_db -c 'SELECT pg_reload_conf();'
+
+        echo '=== 2. 레플리카 볼륨에 물리 스냅샷 복사 (basebackup) ==='
+        rm -rf /replica_data/*
+        PGPASSWORD=tiger pg_basebackup -h pg-main -U scott -D /replica_data -Fp -Xs -P -R
+        
+        echo '=== 셋업 완료! ==='        
+  pg-replica:
+    image: postgres:15
+    container_name: pg-replica
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg-replica-volume:/var/lib/postgresql/data
+    networks:
+      - db-net
+    depends_on:
+      pg-setup:
+        condition: service_completed_successfully #  셋업이 끝나면 자동으로 데이터가 채워진 채로 부팅됨
