@@ -1,0 +1,19 @@
+# compose06/db-recover.yaml
+
+
+services:
+  my-postgres:
+    image: postgres:15
+    container_name: my-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: scott
+      POSTGRES_PASSWORD: tiger
+      POSTGRES_DB: scott_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # 현재 폴더의 backup.sql 을 컨테이너의 초기화 폴더에 넣어두면 자동 실행된다
+      - ./backup.sql:/docker-entrypoint-initdb.d/backup.sql
+volumes:
+  pgdata:
