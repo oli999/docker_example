@@ -9,6 +9,4 @@ services:
     environment: # 컨테이너에 환경변수를 environment 를 이용해서 전달할수 있다.
       POSTGRES_USER: scott
       POSTGRES_PASSWORD: tiger
-      POSTGRESS_DB: scott_db
-
-
+      POSTGRES_DB: scott_db

@@ -1,0 +1,38 @@
+# compose05/docker-compose.yaml
+
+# network 설정
+networks:
+  my-net:
+    driver: bridge
+# volume 설정
+volumes:
+  pgdata:
+
+services:
+  my-fastapi:
+    build: . # 현재 경로에 있는 docker 파일을 이용해서 이미지 빌드
+    image: my-fastapi:1.0
+    container_name: my-fastapi
+    ports:
+      - '8000:8000'
+    environment:
+      - DB_URL=postgresql://scott:tiger@my-postgres:5432/scott_db
+    networks:
+      - my-net
+  
+  my-postgres:
+    image: postgres:15
+    container_name: my-postgres
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: scott
+      POSTGRES_PASSWORD: tiger
+      POSTGRES_DB: scott_db  
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # 아래처럼 연결을 하면 컨테이너가 초기화 되는 시점에 최초1번 실행된다.
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - my-net
+    
