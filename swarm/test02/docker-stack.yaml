@@ -1,0 +1,49 @@
+# swram/test02/docker-stack.yaml
+# swarm 에서는  stack 파일을 만들어 놓고 
+# 배포할때는  docker stack deploy -c  <파일명> <stack명> 해서 배포를 한다  
+
+networks:
+  # my-net 이라는 이름의 network 를 만들겠다 
+  my-net:
+    # cluster 환경이기 때문에 overlay 로 설정 
+    driver: overlay
+
+volumes:
+  # postgres db 가 사용할 볼륨설정
+  pgdata:
+
+services:
+  swarm-fastapi:
+    #image: myoli999/swarm-fastapi:1.0
+    image: myoli999/swarm-fastapi:1.1
+    environment:
+      # container 의 이름이 아닌 서비스의 이름이 db 접속 url 에 들어가는것을 유의한다 
+      # postgresql://scott:tiger@<db서비스이름>:5432/scott_db
+      - DB_URL=postgresql://scott:tiger@my-postgres:5432/scott_db
+    ports:
+      - '8000:8000'
+    networks:
+      - my-net
+    deploy:
+      replicas: 3
+  # db 서비스 
+  my-postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: scott
+      POSTGRES_PASSWORD: tiger
+      POSTGRES_DB: scott_db
+    volumes:
+      # 미리 준비한 volume 을 연결하고 
+      - pgdata:/varlib/postgresql/data
+      # nfs 에 연결된 폴더의 파일을 bind mount 한다 
+      # 처음 db 가 활성화 될때 최초 1번만 실행된다. 이미 사용하던 volume 이 있으면 실행안됨
+      - /mnt/nfs/pg_init/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - my-net
+    deploy:
+      # DB 는 replicas 1 개 
+      replicas: 1
+      # 배포되는 node 를 직접 조건을 통해서 지정할수 있다.
+      placement:
+        constraints: [node.hostname == mgmt]
