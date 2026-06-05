@@ -26,6 +26,14 @@ services:
       - my-net
     deploy:
       replicas: 3
+      # container 가 교체 될때 적용할 옵션
+      update_config:
+        parallelism: 1 # 한번에 1대씩 교체 (기본값)
+        delay: 10s  # 1대 교체하고 다음 교체 까지 10초 지연 (안정성 확보)
+        order: start-first # 기존것을 끄기전에 새버전을 띄우고 기존것을 꺼라 (무중단)
+        failure_action: rollback # 새버전이 에러나면 자동으로 구버전으로 롤백
+        monitor: 15s # 새버전 띄우고 15초 지켜보기 (죽는지 안죽는지)
+        max_failure_ratio: 0 # 1대라로 실패하면 즉시 실패로 간주하기 
   # db 서비스 
   my-postgres:
     image: postgres:15
