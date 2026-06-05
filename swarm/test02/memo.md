@@ -19,4 +19,7 @@ docker push  myoli999/swarm-fastapi:1.1
 # 배포하기 
 docker stack deploy -c docker-stack.yaml my-app
 
+# 중지하기
+docker stack rm my-app
+
 ```
