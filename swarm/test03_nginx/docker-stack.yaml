@@ -64,7 +64,7 @@ services:
       POSTGRES_DB: scott_db
     volumes:
       # 미리 준비한 volume 을 연결하고 
-      - pgdata:/varlib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
       # nfs 에 연결된 폴더의 파일을 bind mount 한다 
       # 처음 db 가 활성화 될때 최초 1번만 실행된다. 이미 사용하던 volume 이 있으면 실행안됨
       - /mnt/nfs/pg_init/init.sql:/docker-entrypoint-initdb.d/init.sql
