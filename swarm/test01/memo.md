@@ -13,7 +13,7 @@ docker swarm init --advertise-addr 172.16.8.200
 docker node ls
 
 # 클러스터에 테스트로 nginx 컨테이너 3 개 배포하기 
-docker service create --name my-web --replicas 1 -p 8080:80 nginx
+docker service create --name my-web --replicas 1 -p 80:80 nginx
 
 # 서비스 확인 
 docker service ls

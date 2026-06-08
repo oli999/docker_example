@@ -36,6 +36,16 @@ services:
     configs:
       - source: nginx_config
         target: /etc/nginx/nginx.conf
+    # nginx 는 매우 가벼운 application
+    # resources: 를 이용해서 cGroup 에서 제공하는 자원을 제한 혹은 최소량 확보를 할수가 있다.
+    # 2core 는 2.0 개 만큼의 cpu 자원을 가지고 있다고 가정된다 
+    resources:
+      limits:
+        cpu: '0.3' # 최대 0.3 코어 사용 허용
+        memory: 256M # 최대 256MB RAM 허용
+      reservations:
+        cpus: '0.05' # 최소 0.05 코어를 보장한다
+        memofy: 64M # 최소 64MB RAM 보장
 
   swarm-fastapi:
     image: myoli999/swarm-fastapi:1.1
@@ -50,14 +60,14 @@ services:
       - my-net
     deploy:
       replicas: 1
-      # container 가 교체 될때 적용할 옵션
-      update_config:
-        parallelism: 1 # 한번에 1대씩 교체 (기본값)
-        delay: 10s  # 1대 교체하고 다음 교체 까지 10초 지연 (안정성 확보)
-        order: start-first # 기존것을 끄기전에 새버전을 띄우고 기존것을 꺼라 (무중단)
-        failure_action: rollback # 새버전이 에러나면 자동으로 구버전으로 롤백
-        monitor: 15s # 새버전 띄우고 15초 지켜보기 (죽는지 안죽는지)
-        max_failure_ratio: 0 # 1대라로 실패하면 즉시 실패로 간주하기 
+    resources:
+      limits:
+        cpus: '0.5' # 최대 0.5 코어 사용 허용
+        memory: 512M # 최대 512MB RAM 허용
+      reservations:
+        cpus: '0.1' # 최소 0.1 코어 보장
+        memory: 128M # 최소 128MB RAM 보장
+
   # db 서비스 
   my-postgres:
     image: postgres:15
@@ -76,6 +86,10 @@ services:
     deploy:
       # DB 는 replicas 1 개 
       replicas: 1
-      # 배포되는 node 를 직접 조건을 통해서 지정할수 있다.
-      # placement:
-      #   constraints: [node.hostname == mgmt]
+    resources:
+      limits:
+        cpus: '1.0' # 최대 1 코어 사용 허용
+        memory: 1G  # 최대 1GB RAM 허용
+      reservations:
+        cpus: '0.25'  # 최소 0.25 코어 보장
+        memory: 512M  # 최소 512MB RAM 보장

@@ -1,2 +1,16 @@
 test02_jo/
 test02_jo_front/
+*.tfvars
+# .gitignore
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files 
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+
+# 인증키라던지 민감한 정보가 있는 파일은 git 의 추적 대상에서 제외 시킨다
+terraform.tfvars
