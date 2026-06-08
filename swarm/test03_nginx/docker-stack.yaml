@@ -13,21 +13,36 @@ volumes:
   # postgres db 가 사용할 볼륨설정
   pgdata:
 
+# docker-stack.yaml 을 실행하는 node 의 현재 경로에 있는 nginx.conf 파일을 
+# 클라스터에 있는 모든 node 에서 실행하는 서비스(container)에서 사용할수 있도록 등록한다 
+configs:
+  nginx_config: # 이름은 마음대로 지을수 있다.
+    file: ./nginx.conf
+
 services:
+  my-nginx:
+    image: nginx:latest
+    # host 의 80 port 연결은 container(nginx) 의 80 port 로 연결하겠다  
+    ports:
+      - '80:80'
+    networks:
+      - my-net
+    deploy:
+      replicas: 2
+    # 미리 정의해서 설정한 nginx_config 를 사용하기 
+    configs:
+      - source: nginx_config
+        target: /etc/nginx/nginx.conf
 
   swarm-fastapi:
-    #image: myoli999/swarm-fastapi:1.0
     image: myoli999/swarm-fastapi:1.1
     environment:
       # container 의 이름이 아닌 서비스의 이름이 db 접속 url 에 들어가는것을 유의한다 
       # postgresql://scott:tiger@<db서비스이름>:5432/scott_db
       - DB_URL=postgresql://scott:tiger@my-postgres:5432/scott_db
-    # host 의 8000 번 port 에 들어오는 접속은 swarm-fastapi 에서 실행중인 container 의 8000 port 로 연결
-    # 클러스터 내의 모든 node 의 8000 번 port 가 열린다
-    # 그중에 하나의 node 의 8000 port 로 들어오는 접속은 swarm 의 ingress 가 service 의 8000 port 로 알아서 연결해준다.
-    # container 가 여러개 실행중이면 적절한 로드벨런싱도 제공한다 
-    ports:
-      - '8000:8000'
+    # nginx 를 통해서 요청을 전달 받기 때문에 아래의 설정은 필요가 없다
+    # ports:
+    #   - '8000:8000'
     networks:
       - my-net
     deploy:
