@@ -32,20 +32,21 @@ services:
       - my-net
     deploy:
       replicas: 2
+      # nginx 는 매우 가벼운 application
+      # resources: 를 이용해서 cGroup 에서 제공하는 자원을 제한 혹은 최소량 확보를 할수가 있다.
+      # 2core 는 2.0 개 만큼의 cpu 자원을 가지고 있다고 가정된다 
+      resources:
+        limits:
+          cpus: '0.3' # 최대 0.3 코어 사용 허용
+          memory: 256M # 최대 256MB RAM 허용
+        reservations:
+          cpus: '0.05' # 최소 0.05 코어를 보장한다
+          memory: 64M # 최소 64MB RAM 보장
     # 미리 정의해서 설정한 nginx_config 를 사용하기 
     configs:
       - source: nginx_config
         target: /etc/nginx/nginx.conf
-    # nginx 는 매우 가벼운 application
-    # resources: 를 이용해서 cGroup 에서 제공하는 자원을 제한 혹은 최소량 확보를 할수가 있다.
-    # 2core 는 2.0 개 만큼의 cpu 자원을 가지고 있다고 가정된다 
-    resources:
-      limits:
-        cpu: '0.3' # 최대 0.3 코어 사용 허용
-        memory: 256M # 최대 256MB RAM 허용
-      reservations:
-        cpus: '0.05' # 최소 0.05 코어를 보장한다
-        memofy: 64M # 최소 64MB RAM 보장
+
 
   swarm-fastapi:
     image: myoli999/swarm-fastapi:1.1
@@ -60,13 +61,13 @@ services:
       - my-net
     deploy:
       replicas: 1
-    resources:
-      limits:
-        cpus: '0.5' # 최대 0.5 코어 사용 허용
-        memory: 512M # 최대 512MB RAM 허용
-      reservations:
-        cpus: '0.1' # 최소 0.1 코어 보장
-        memory: 128M # 최소 128MB RAM 보장
+      resources:
+        limits:
+          cpus: '0.5' # 최대 0.5 코어 사용 허용
+          memory: 512M # 최대 512MB RAM 허용
+        reservations:
+          cpus: '0.1' # 최소 0.1 코어 보장
+          memory: 128M # 최소 128MB RAM 보장
 
   # db 서비스 
   my-postgres:
@@ -86,10 +87,10 @@ services:
     deploy:
       # DB 는 replicas 1 개 
       replicas: 1
-    resources:
-      limits:
-        cpus: '1.0' # 최대 1 코어 사용 허용
-        memory: 1G  # 최대 1GB RAM 허용
-      reservations:
-        cpus: '0.25'  # 최소 0.25 코어 보장
-        memory: 512M  # 최소 512MB RAM 보장
+      resources:
+        limits:
+          cpus: '1.0' # 최대 1 코어 사용 허용
+          memory: 1G  # 최대 1GB RAM 허용
+        reservations:
+          cpus: '0.25'  # 최소 0.25 코어 보장
+          memory: 512M  # 최소 512MB RAM 보장
