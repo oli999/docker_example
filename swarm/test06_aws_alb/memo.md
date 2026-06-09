@@ -65,6 +65,7 @@ vkvijhvr55bjnk38mu83416ig     swarm-worker-2   Ready     Active                 
 # port 로 forwarding 하겠다는 의미 
 ssh -L 9443:10.100.3.93:9443 user1@172.16.8.200
 
+
 # mgmt 의 docker context 를  swarm-master 로 변경하고 potainer stack 을 배포한다
 docker context use swarm-master
 
@@ -75,3 +76,32 @@ https://localhost:9443
 
 ```
 <img src="./assets/image09.png">
+
+```bash
+
+# port forwarding 을 background 로 하기
+ssh -N -f -L 9443:10.100.3.93:9443 user1@172.16.8.200
+# port forwarding background 프로세스를 찾아서 종료하기
+netstat -ano | findstr 9443 
+# 위를 실행해서 9443 port 를 사용하는 프로세스 번호를 찾아서 없애기
+# taskkill /f /pid 프로세스번호
+taskkill /f /pid 25968
+
+```
+
+### 배포한 서비스 제어
+
+```bash
+# 우리는 위에서 아래의 서비스를 배포 했다
+docker service create --name my-web --replicas 1 -p 80:80 nginx
+
+# 배포한 서비스 목록확인
+docker service ls
+
+# 서비스 리플리카 변경
+docker service scale my-web=3
+
+# 서비스 삭제
+docker service rm my-web
+
+```
