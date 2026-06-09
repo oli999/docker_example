@@ -9,12 +9,12 @@ networks:
     driver: overlay
 
 volumes:
-  postgres_data:
+  postgres_data: # 만들어질 volume 의 이름
     driver: local
     driver_opts:
       type: nfs
       o: addr=172.16.8.203,rw,nfsvers=4
-      device: ":/nfs/shared/zzz"
+      device: ":/nfs/shared/postgres_data"
 
 # docker-stack.yaml 을 실행하는 node 의 현재 경로에 있는 nginx.conf 파일을 
 # 클라스터에 있는 모든 node 에서 실행하는 서비스(container)에서 사용할수 있도록 등록한다 
