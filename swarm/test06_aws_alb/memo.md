@@ -105,3 +105,16 @@ docker service scale my-web=3
 docker service rm my-web
 
 ```
+
+### 실습후에 terraform destory 하고 정리 작업하기 
+
+- tailscale api console 에서 swarm-master 삭제
+- docker context 를 default 로 변경
+- swarm-master docker context 삭제(선택)
+
+```bash
+
+# default context 를 사용하도록 변경 
+docker context use default
+
+```
