@@ -1,0 +1,75 @@
+# docker-stack-monitor.yaml 파일의 내용 
+
+networks:
+  monitor-net:
+    driver: overlay
+
+volumes:
+  prom_data:
+  grafana_data:
+
+services:
+  # 1. cAdvisor: 모든 노드에 CCTV 설치
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - monitor-net
+    deploy:
+      mode: global  #모든 워커 노드에 무조건 1개씩 띄워라!
+
+
+  # 2. Prometheus: 데이터 수집기 (매니저 노드에 1개만)
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      # 현재 경로에 있는 prometheus.yaml 파일을 컨테이너 내부에 연결
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+      - prom_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - monitor-net
+    deploy:
+      replicas: 1
+      # master node 에만 배포가 되도록 설정
+      placement:
+        constraints: [node.role == manager]
+
+
+  # 3. Grafana
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - monitor-net
+    deploy:
+      replicas: 1
+       # master node 에만 배포가 되도록 설정
+      placement:
+        constraints: [node.role == manager]
+
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    volumes:
+      # 호스트(서버)의 시스템 정보를 읽기 위해 컨테이너 내부로 연결 (읽기 전용)
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      # 연결한 폴더가 호스트의 정보라고 알려주는 옵션
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - monitor-net
+    deploy:
+      mode: global  # 모든 서버 노드에 1개씩 무조건 설치!
