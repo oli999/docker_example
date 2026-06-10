@@ -1,0 +1,47 @@
+---
+# ==========================================================
+# Play 1: 마스터 노드 Swarm 초기화 및 토큰 발급
+# ==========================================================
+- name: 👑 Docker Swarm 마스터 노드 구성
+  hosts: master
+  become: yes
+  tasks:
+    - name: 1. 현재 Swarm 클러스터 상태 확인
+      ansible.builtin.command: docker info --format '{{ "{{" }}.Swarm.LocalNodeState{{ "}}" }}'
+      register: swarm_status
+      changed_when: false # 상태만 조회하는 것이므로 Changed(노란색)로 표시하지 않음
+
+    - name: 2. 마스터 노드 Swarm 초기화 (Init)
+      ansible.builtin.command: docker swarm init --advertise-addr {{ ansible_default_ipv4.address }}
+      # Swarm이 이미 'active' 상태가 아닐 때만 실행 (멱등성 보장)
+      when: swarm_status.stdout != 'active'
+
+    - name: 3. Worker 노드용 Join 토큰 추출
+      ansible.builtin.command: docker swarm join-token -q worker
+      register: worker_join_token
+      changed_when: false
+
+    - name: 4. 발급된 토큰 화면에 출력 (강사님 확인용)
+      ansible.builtin.debug:
+        msg: "발급된 워커 조인 토큰: {{ worker_join_token.stdout }}"
+
+
+# ==========================================================
+# Play 2: 워커 노드들을 마스터에 연결
+# ==========================================================
+- name: 🤝 Docker Swarm 워커 노드 조인
+  hosts: workers
+  become: yes
+  tasks:
+    - name: 1. 워커 노드의 현재 Swarm 상태 확인
+      ansible.builtin.command: docker info --format '{{ "{{" }}.Swarm.LocalNodeState{{ "}}" }}'
+      register: worker_swarm_status
+      changed_when: false
+
+    - name: 2. 워커 노드를 마스터에 조인 (Join)
+      ansible.builtin.command: >
+        docker swarm join
+        --token {{ hostvars[groups['master'][0]]['worker_join_token']['stdout'] }}
+        {{ hostvars[groups['master'][0]]['ansible_default_ipv4']['address'] }}:2377
+      # 워커 노드가 'inactive' 상태일 때만 조인 실행
+      when: worker_swarm_status.stdout == 'inactive'
