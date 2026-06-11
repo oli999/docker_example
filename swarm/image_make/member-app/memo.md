@@ -1,9 +1,10 @@
 
-1. 이미지 내부를 열기 위해 임시 컨테이너 생성 (실행은 안 시킵니다)
-docker create --name temp_container myoli999/member-app:1.0
+```bash
+# 이미지를 빌드하고 docker hub 에 올리기
+docker build -t <도커허브아이디>/memeber-app:1.0 .
+docker build -t myoli999/member-app:1.0 .
 
-# 2. 컨테이너 내부의 /src/main.py 파일을 현재 리눅스 경로(.)로 복사해오기
-docker cp temp_container:/app/main.py ./main.py
+docker push <도커허브아이디>/memeber-app:1.0
+docker push myoli999/member-app:1.0
 
-# 3. 볼일 다 본 임시 껍데기 컨테이너 삭제
-docker rm temp_container
+```

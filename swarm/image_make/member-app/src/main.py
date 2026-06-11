@@ -32,6 +32,10 @@ def read_members():
     conn.close()
     return {"status": "success", "data": rows}
 
+# post 방식으로 json 문자열 보내서 회원정보가 추가 되는지 확인하기 
+# curl -X POST http://172.16.8.200:8080/members \
+#      -H "Content-Type: application/json" \
+#      -d '{"name": "park", "addr": "jeju"}'
 @app.post("/members")
 def save_members(member: MemberCreate):
     conn = psycopg2.connect(WRITABLE_URL)

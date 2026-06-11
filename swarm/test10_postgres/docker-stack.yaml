@@ -98,3 +98,18 @@ services:
         exec docker-entrypoint.sh postgres
     deploy:
       endpoint_mode: dnsrr
+    
+  # 3. 백엔드 앱
+  member-app:
+    image: myoli999/member-app:1.1
+    ports:
+      - "8080:8000"
+    environment:
+      # 위에서 작성한 DB 의 서비스명을 확인한다
+      # postgresql://scott:tiger@<DB 서비스명>:5432/scott_db
+      WRITABLE_URL: "postgresql://scott:tiger@pg-main:5432/scott_db"
+      READONLY_URL: "postgresql://scott:tiger@pg-replica:5432/scott_db"
+    networks:
+      - db-net
+    deploy:
+      replicas: 3
