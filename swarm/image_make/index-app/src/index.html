@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSA API 통합 테스트</title>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; padding: 30px; background-color: #f8f9fa; }
+        h1 { color: #343a40; }
+        .btn-group { margin-bottom: 20px; }
+        button { 
+            padding: 12px 24px; 
+            margin-right: 12px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: bold;
+            background-color: #28a745; 
+            color: white; 
+            border: none; 
+            border-radius: 6px; 
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #218838; }
+        /* 글목록 버튼은 색상을 살짝 다르게 배치 */
+        #btn-post { background-color: #007bff; }
+        #btn-post:hover { background-color: #0069d9; }
+        
+        pre { 
+            background-color: #272822; 
+            color: #f8f8f2; 
+            padding: 20px; 
+            border-radius: 6px; 
+            overflow-x: auto; 
+            font-size: 15px;
+            min-height: 120px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>MSA 라우팅 & DB 분산 테스트</h1>
+    
+    <div class="btn-group">
+        <button id="btn-member">회원 목록 조회 (/members)</button>
+        <button id="btn-post">글 목록 조회 (/posts)</button>
+    </div>
+
+    <h2>응답 결과 (JSON):</h2>
+    <pre id="result">버튼을 눌러 API를 호출해 보세요!</pre>
+
+    <script src="app.js"></script>
+</body>
+</html>
